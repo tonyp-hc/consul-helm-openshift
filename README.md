@@ -324,3 +324,19 @@ One has been provided in the `overrides` folder and so will be present in the te
 ```bash
 $ cp overrides/server-securitycontextconstraints.yaml consul-helm/manifests/consul/templates/server/
 ```
+
+
+## Updating Container Images
+If updating container images but not generating new templates, the following files will need updates:
+```bash
+$ grep -R -e "image:" -e "-image" ./manifests
+./manifests/consul/templates/webhook/webhook-cert-manager-deployment.yaml:        image: hashicorp/consul-k8s:0.19.0
+./manifests/consul/templates/connect-inject/connect-inject-deployment.yaml:          image: "hashicorp/consul-k8s:0.19.0"
+./manifests/consul/templates/connect-inject/connect-inject-deployment.yaml:                -consul-image="hashicorp/consul-enterprise:1.9.0-ent-beta1" \
+./manifests/consul/templates/connect-inject/connect-inject-deployment.yaml:                -envoy-image="envoyproxy/envoy-alpine:v1.14.4" \
+./manifests/consul/templates/connect-inject/connect-inject-deployment.yaml:                -consul-k8s-image="hashicorp/consul-k8s:0.19.0" \
+./manifests/consul/templates/tests/test-runner.yaml:      image: "hashicorp/consul-enterprise:1.9.0-ent-beta1"
+./manifests/consul/templates/server/server-statefulset.yaml:          image: "hashicorp/consul-enterprise:1.9.0-ent-beta1"
+./manifests/consul/templates/controller/controller-deployment.yaml:        image: hashicorp/consul-k8s:0.19.0
+./manifests/consul/templates/client/client-daemonset.yaml:          image: "hashicorp/consul-enterprise:1.9.0-ent-beta1"
+``` 
