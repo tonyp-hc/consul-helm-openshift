@@ -1,0 +1,26 @@
+---
+# Source: consul/templates/client-config-configmap.yaml
+# ConfigMap with extra configuration specified directly to the chart
+# for client agents only.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: consul-client-config
+  namespace: consul
+  labels:
+    app: consul
+    chart: consul-helm
+    heritage: Helm
+    release: consul-oc
+data:
+  extra-from-values.json: |-
+    {
+      "primary_datacenter": "oc-us-east-poc",
+      "log_level":"INFO",
+      "encrypt":"YZqGRaEajsh8M1w4e1z/Jg=="
+    }
+
+  central-config.json: |-
+    {
+      "enable_central_service_config": true
+    }

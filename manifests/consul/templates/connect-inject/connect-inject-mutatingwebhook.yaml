@@ -1,0 +1,31 @@
+---
+# Source: consul/templates/connect-inject-mutatingwebhook.yaml
+# The MutatingWebhookConfiguration to enable the Connect injector.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: consul-connect-injector-cfg
+  namespace: consul
+  labels:
+    app: consul
+    chart: consul-helm
+    heritage: Helm
+    release: consul-oc
+webhooks:
+  - name: consul-connect-injector.consul.hashicorp.com
+    failurePolicy: Ignore
+    sideEffects: None
+    admissionReviewVersions:
+      - "v1beta1"
+      - "v1"
+    clientConfig:
+      service:
+        name: consul-connect-injector-svc
+        namespace: consul
+        path: "/mutate"
+      caBundle: ""
+    rules:
+      - operations: [ "CREATE" ]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]

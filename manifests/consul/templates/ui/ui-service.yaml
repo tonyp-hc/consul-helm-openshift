@@ -1,0 +1,23 @@
+---
+# Source: consul/templates/ui-service.yaml
+# UI Service for Consul Server
+apiVersion: v1
+kind: Service
+metadata:
+  name: consul-ui
+  namespace: consul
+  labels:
+    app: consul
+    chart: consul-helm
+    heritage: Helm
+    release: consul-oc
+    component: ui
+spec:
+  selector:
+    app: consul
+    release: "consul-oc"
+    component: server
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8500

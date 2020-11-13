@@ -1,0 +1,49 @@
+---
+# Source: consul/templates/controller-clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: consul-controller
+  labels:
+    app: consul
+    chart: consul-helm
+    heritage: Helm
+    release: consul-oc
+    component: controller
+rules:
+- apiGroups:
+  - consul.hashicorp.com
+  resources:
+  - servicedefaults
+  - serviceresolvers
+  - proxydefaults
+  - servicerouters
+  - servicesplitters
+  - serviceintentions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - consul.hashicorp.com
+  resources:
+  - servicedefaults/status
+  - serviceresolvers/status
+  - proxydefaults/status
+  - servicerouters/status
+  - servicesplitters/status
+  - serviceintentions/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups: ["policy"]
+  resources: ["podsecuritypolicies"]
+  resourceNames:
+    - consul-controller
+  verbs:
+    - use

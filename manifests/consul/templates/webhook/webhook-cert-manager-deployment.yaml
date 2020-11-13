@@ -1,0 +1,58 @@
+---
+# Source: consul/templates/webhook-cert-manager-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consul-webhook-cert-manager
+  labels:
+    app: consul
+    chart: consul-helm
+    heritage: Helm
+    release: consul-oc
+    component: webhook-cert-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consul
+      chart: consul-helm
+      heritage: Helm
+      release: consul-oc
+      component: webhook-cert-manager
+  template:
+    metadata:
+      labels:
+        app: consul
+        chart: consul-helm
+        heritage: Helm
+        release: consul-oc
+        component: webhook-cert-manager
+      annotations:
+        "consul.hashicorp.com/connect-inject": "false"
+        "consul.hashicorp.com/config-checksum": 014d8048bb0354582d6bb78b50525ac6b132dbfe9e04fc7318e3a78885ed09a5
+    spec:
+      containers:
+      - command:
+        - "/bin/sh"
+        - "-ec"
+        - |
+          consul-k8s webhook-cert-manager \
+            -config-file=/bootstrap/config/webhook-config.json
+        image: hashicorp/consul-k8s:0.19.0
+        name: webhook-cert-manager
+        resources:
+          limits:
+            cpu: 100m
+            memory: 50Mi
+          requests:
+            cpu: 100m
+            memory: 50Mi
+        volumeMounts:
+        - name: config
+          mountPath: /bootstrap/config
+      terminationGracePeriodSeconds: 10
+      serviceAccountName: consul-webhook-cert-manager
+      volumes:
+      - name: config
+        configMap:
+          name: consul-webhook-cert-manager-config

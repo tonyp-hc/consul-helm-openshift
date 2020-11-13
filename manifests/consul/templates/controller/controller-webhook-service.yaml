@@ -1,0 +1,23 @@
+---
+# Source: consul/templates/controller-webhook-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: consul-controller-webhook
+  namespace: consul
+  labels:
+    app: consul
+    chart: consul-helm
+    heritage: Helm
+    release: consul-oc
+    component: controller
+spec:
+  ports:
+  - port: 443
+    targetPort: 9443
+  selector:
+    app: consul
+    chart: consul-helm
+    heritage: Helm
+    release: consul-oc
+    component: controller

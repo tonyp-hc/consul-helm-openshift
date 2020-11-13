@@ -1,0 +1,44 @@
+# config.yaml
+global:
+  enabled: true 
+  name: consul
+  image: "hashicorp/consul-enterprise:1.9.0-ent-beta1"
+  imageK8S: "hashicorp/consul-k8s:0.19.0"
+  imageEnvoy: "envoyproxy/envoy-alpine:v1.14.4"
+  datacenter: oc-us-east-poc
+  enablePodSecurityPolicies: true
+  gossipEncryption:
+    secretName: "consul-gossip-encryption-key"
+    secretKey: "key"
+  openshift:
+    enabled: true
+connectInject:
+  enabled: true
+  default: true
+server:
+  enabled: true 
+  enterpriseLicense:
+    secretName: null
+    secretKey: null
+  replicas: 3
+  bootstrapExpect: 3
+  disruptionBudget:
+    enabled: true
+    maxUnavailable: 0
+  affinity: null
+  extraConfig: |
+    {
+      "primary_datacenter": "oc-us-east-poc",
+      "log_level":"INFO",
+      "encrypt":"YZqGRaEajsh8M1w4e1z/Jg=="
+    }
+client:
+  enabled: true
+  grpc: true
+ui:
+  enabled: true
+controller:
+  enabled: true
+syncCatalog:
+  k8sTag: oc
+  consulPrefix: oc-

@@ -1,0 +1,20 @@
+---
+# Source: consul/templates/webhook-cert-manager-clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: consul-webhook-cert-manager
+  labels:
+    app: consul
+    chart: consul-helm
+    heritage: Helm
+    release: consul-oc
+    component: webhook-cert-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: consul-webhook-cert-manager
+subjects:
+- kind: ServiceAccount
+  name: consul-webhook-cert-manager
+  namespace: consul
