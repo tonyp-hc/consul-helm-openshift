@@ -216,6 +216,9 @@ controller-clusterrolebinding.yaml            server-disruptionbudget.yaml
 *Important*: There are very likely changes/updates that need to be made to the generated YAML files. The following are the changes that were made to the manifest files provided in this repository:
 
 ## Updates to generated consul-helm templates
+### Disabling Anti Affinity Rules
+In case the deployment target has fewer than three worker nodes, the generated templates have [disabled antiaffinity rules](https://github.com/kawsark/consul-helm-openshift/blob/e031f13e9e8a81d8b42b7ed451fa70282fb8e0ec/oc.values.yaml#L148-L159) by setting `affinity: null` in `oc-values.yaml`
+
 ### Disabling PVCs
 In the generated `server-statefulset.yaml` file, add a new Data volume:
 ```yaml
