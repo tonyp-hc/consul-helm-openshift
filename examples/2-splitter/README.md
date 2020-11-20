@@ -11,8 +11,7 @@ Our steps:
 5. weight all traffic to API service v2
 
 ```bash
-# working out of consul-helm-openshift/examples/
-$ cd 2-splitter/
+# working out of consul-helm-openshift/examples/2-splitter/
 $ oc apply -f api.yml
 $ oc apply -f web.yml
 ``` 
