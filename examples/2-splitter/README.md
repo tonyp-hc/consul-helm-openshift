@@ -225,7 +225,9 @@ $ cat << EOF > api-service-splitter-b_50_50.json
   ]
 }
 EOF
+```
 
+```bash
 $ consul config write api-service-splitter-b_50_50.json
 ```
 
@@ -266,7 +268,9 @@ $ cat << EOF > api-service-splitter-c_0_100.json
   ]
 }
 EOF
+```
 
+```bash
 $ consul config write api-service-splitter-c_0_100.json
 ```
 
