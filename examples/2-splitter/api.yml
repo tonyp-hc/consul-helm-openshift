@@ -1,0 +1,73 @@
+---
+# api backend v1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment-v1
+  labels:
+    app: api
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: api
+        version: v1
+      annotations:
+        'consul.hashicorp.com/connect-inject': 'true'
+        'consul.hashicorp.com/service-meta-version': 'v1'
+    spec:
+      containers:
+        - name: api
+          image: nicholasjackson/fake-service:v0.7.8
+          ports:
+            - containerPort: 9090
+          env:
+            - name: 'LISTEN_ADDR'
+              value: '127.0.0.1:9090'
+            - name: 'NAME'
+              value: 'api-v1'
+            - name: 'MESSAGE'
+              value: 'Response from API v1'
+
+---
+# api backend v2
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment-v2
+  labels:
+    app: api
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: api
+        version: v2
+      annotations:
+        'consul.hashicorp.com/connect-inject': 'true'
+        'consul.hashicorp.com/service-meta-version': 'v2'
+    spec:
+      containers:
+        - name: api
+          image: nicholasjackson/fake-service:v0.7.8
+          ports:
+            - containerPort: 9090
+          env:
+            - name: 'LISTEN_ADDR'
+              value: '127.0.0.1:9090'
+            - name: 'NAME'
+              value: 'api-v2'
+            - name: 'MESSAGE'
+              value: 'Response from API v2'
