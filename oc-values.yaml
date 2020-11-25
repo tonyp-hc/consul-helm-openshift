@@ -14,7 +14,7 @@ global:
     enabled: true
 connectInject:
   enabled: true
-  default: true
+  default: false
 server:
   enabled: true 
   enterpriseLicense:
