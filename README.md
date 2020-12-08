@@ -65,8 +65,8 @@ $ kubectl create secret generic consul-gossip-encryption-key --from-literal=key=
 ### Consul Servers
 ```bash
 $ cd manifests/consul/templates
-$ oc apply -f server/server-serviceaccount.yaml
-$ oc apply -f server/server-securitycontextconstraints.yaml
+$ oc apply -f server-serviceaccount.yaml
+$ oc apply -f server-securitycontextconstraints.yaml
 $ oc get scc consul-server
 NAME            PRIV    CAPS         SELINUX    RUNASUSER        FSGROUP     SUPGROUP   PRIORITY     READONLYROOTFS   VOLUMES
 consul-server   false   <no value>   RunAsAny   MustRunAsRange   MustRunAs   RunAsAny   <no value>   false            ["configMap","downwardAPI","emptyDir","persistentVolumeClaim","projected","secret"]
@@ -74,15 +74,28 @@ consul-server   false   <no value>   RunAsAny   MustRunAsRange   MustRunAs   Run
 
 $ oc adm policy add-scc-to-user consul-server -z consul-server
 clusterrole.rbac.authorization.k8s.io/system:openshift:scc:consul-server added: "consul-server"
-
-$ oc apply -f server/
-
-$ oc get pods
-
-# keep an eye for pods to complete deployment
 ```
 
-### Apply Enterprise License (optional)
+### Consul Clients (for OpenShift nodes)
+```bash
+$ oc apply -f client-serviceaccount.yaml
+$ oc apply -f client-securitycontextconstraints.yaml
+$ oc get scc consul-client
+NAME            PRIV    CAPS         SELINUX     RUNASUSER        FSGROUP     SUPGROUP    PRIORITY     READONLYROOTFS   VOLUMES
+consul-client   false   <no value>   MustRunAs   MustRunAsRange   MustRunAs   MustRunAs   <no value>   false            ["configMap","downwardAPI","emptyDir","persistentVolumeClaim","projected","secret"]
+
+$ oc adm policy add-scc-to-user consul-client -z consul-client
+clusterrole.rbac.authorization.k8s.io/system:openshift:scc:consul-client added: "consul-client"
+```
+
+
+### Apply all the things! 
+```bash
+# from within manifests/consul/templates/
+$ oc apply -f . 
+```
+
+### Enable Enterprise License (optional)
 The Consul Enterprise license can be applied a few different ways. Most commonly, `server.enterpriseLicense` will be set in the [helm chart](https://github.com/hashicorp/consul-helm/blob/master/values.yaml#L260-L262) but there may be cases where that is not desired. It can also be set using the `consul license put` command like below from any server node in the cluster.
 ```bash
 $ oc exec -it consul-server-0 -- consul license put <paste-license-file-contents>
@@ -107,32 +120,6 @@ Licensed Features:
   Audit Logging
 ```
 
-### Consul Clients (for OpenShift nodes)
-```bash
-$ oc apply -f client/client-serviceaccount.yaml
-$ oc apply -f client/client-securitycontextconstraints.yaml
-$ oc get scc consul-client
-NAME            PRIV    CAPS         SELINUX     RUNASUSER        FSGROUP     SUPGROUP    PRIORITY     READONLYROOTFS   VOLUMES
-consul-client   false   <no value>   MustRunAs   MustRunAsRange   MustRunAs   MustRunAs   <no value>   false            ["configMap","downwardAPI","emptyDir","persistentVolumeClaim","projected","secret"]
-
-$ oc adm policy add-scc-to-user consul-client -z consul-client
-clusterrole.rbac.authorization.k8s.io/system:openshift:scc:consul-client added: "consul-client"
-
-$ oc apply -f client/
-```
-
-
-### All other services (dns, ui, connect-inject, etc)
-```bash
-$ oc apply -f sync-catalog/
-$ oc apply -f connect-inject/
-$ oc apply -f dns/
-$ oc apply -f ui/
-$ oc apply -f controller/
-$ oc apply -f crd/
-$ oc apply -f mesh-gateway/
-$ oc apply -f webhook/
-```
 
 ## Check Setup Status
 ```bash
@@ -187,12 +174,14 @@ api-deployment-v1   1/1     1            1           15m
 # Additional Info
 
 ## Generating consul-helm templates (optional)
-This repo contains templates created from consul-helm:0.25.0 in order to apply specific customizations, like disabling PVCs. As of [1.9.0](https://github.com/hashicorp/consul-helm/blob/master/CHANGELOG.md#0250-oct-12-2020), Consul natively supports traditional helm installs for OpenShift.
+This repo contains templates created from [consul-helm:0.25.0](https://github.com/hashicorp/consul-helm/blob/master/CHANGELOG.md#0250-oct-12-2020) in order to apply specific customizations, like disabling PVCs. As of [1.9.0](https://github.com/hashicorp/consul-helm/blob/master/CHANGELOG.md#0250-oct-12-2020), Consul natively supports traditional helm installs for OpenShift.
+
+**Note:** If running this command, it must be done with v0.25.0 as of the current version of this guide. Later versions of consul-helm require upgrading consul-k8s and consul images.
 
 ```bash
 $ git clone --depth 1 --branch v0.25.0 https://github.com/hashicorp/consul-helm.git
 $ mkdir -p consul-helm/manifests
-$ helm template consul-oc --output-dir consul-helm/manifests/ -f oc-values.yaml consul-helm -n consul
+$ helm template consul-oc --output-dir consul-helm/manifests/ -f oc-values.yaml hashicorp/consul --version v0.25.0 -n consul
 
 $ ls consul-helm/manifests/consul/templates/
 client-config-configmap.yaml                  controller-deployment.yaml                    server-podsecuritypolicy.yaml
