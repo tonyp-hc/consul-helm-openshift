@@ -1,0 +1,101 @@
+---
+# Source: consul/templates/connect-inject-deployment.yaml
+# The deployment for running the Connect sidecar injector
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consul-connect-injector-webhook-deployment
+  namespace: consul
+  labels:
+    app: consul
+    chart: consul-helm
+    heritage: Helm
+    release: consul-oc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consul
+      chart: consul-helm
+      release: consul-oc
+      component: connect-injector
+  template:
+    metadata:
+      labels:
+        app: consul
+        chart: consul-helm
+        release: consul-oc
+        component: connect-injector
+      annotations:
+        "consul.hashicorp.com/connect-inject": "false"
+    spec:
+      serviceAccountName: consul-connect-injector-webhook-svc-account
+      containers:
+        - name: sidecar-injector
+          image: "hashicorp/consul-k8s:0.19.0"
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: CONSUL_HTTP_ADDR
+              value: http://$(HOST_IP):8500
+          command:
+            - "/bin/sh"
+            - "-ec"
+            - |
+              CONSUL_FULLNAME="consul"
+
+              consul-k8s inject-connect \
+                -default-inject=false \
+                -consul-image="hashicorp/consul-enterprise:1.9.0-ent-beta1" \
+                -envoy-image="envoyproxy/envoy-alpine:v1.14.4" \
+                -consul-k8s-image="hashicorp/consul-k8s:0.19.0" \
+                -listen=:8080 \
+                -enable-central-config=true \
+                -allow-k8s-namespace="*" \
+                -enable-namespaces=true \
+                -consul-destination-namespace=default \
+                -enable-k8s-namespace-mirroring=true \
+                -k8s-namespace-mirroring-prefix=oc- \
+                -tls-auto=${CONSUL_FULLNAME}-connect-injector-cfg \
+                -tls-auto-hosts=${CONSUL_FULLNAME}-connect-injector-svc,${CONSUL_FULLNAME}-connect-injector-svc.${NAMESPACE},${CONSUL_FULLNAME}-connect-injector-svc.${NAMESPACE}.svc \
+                -init-container-memory-limit=150Mi \
+                -init-container-memory-request=25Mi \
+                -init-container-cpu-limit=50m \
+                -init-container-cpu-request=50m \
+                -lifecycle-sidecar-memory-limit=50Mi \
+                -lifecycle-sidecar-memory-request=25Mi \
+                -lifecycle-sidecar-cpu-limit=20m \
+                -lifecycle-sidecar-cpu-request=20m \
+          livenessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+              scheme: HTTPS
+            failureThreshold: 2
+            initialDelaySeconds: 1
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+              scheme: HTTPS
+            failureThreshold: 2
+            initialDelaySeconds: 2
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: 50m
+              memory: 50Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
