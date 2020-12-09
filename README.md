@@ -331,4 +331,26 @@ $ grep -R -e "image:" -e "-image" ./manifests
 ./manifests/consul/templates/server/server-statefulset.yaml:          image: "hashicorp/consul-enterprise:1.9.0-ent-beta1"
 ./manifests/consul/templates/controller/controller-deployment.yaml:        image: hashicorp/consul-k8s:0.19.0
 ./manifests/consul/templates/client/client-daemonset.yaml:          image: "hashicorp/consul-enterprise:1.9.0-ent-beta1"
-``` 
+```
+
+
+## Enabling Consul Enterprise Namespaces
+[Consul Enterprise Namespaces](https://www.consul.io/docs/enterprise/namespaces) provide tenant isolation and delegation capabilities within your service catalog and service mesh. They are not enabled in a default helm installation but can be enabled even on an already running instance.
+
+The manifest files included with this repo are built against consul-helm v0.25.0, consul-k8s v0.19.0, and consul v1.9.0. The following release of consul-k8s (v0.20.0) and consul-helm v0.26.0) includes support for additional features like Kubernetes health check synchronization with Consul for connect injected pods (`connectInject.healthChecks` [[GH-651](https://github.com/hashicorp/consul-helm/pull/651)].
+
+To enable namespaces, you can run the `helm template` command like above but update your `oc-values.yaml` with the following:
+- `global.enableConsulNamespaces: true`
+- `connectInject.k8sAllowNamespaces: ["*"]`
+- `connectInject.consulNamespaces.mirroringK8S: true`
+- `connectInject.consulNamespaces.mirroringK8SPrefix: "oc-"` 
+
+This will generate entirely new template files which can be deployed fresh. However, if you already followed the instructions in this repo to deploy Consul Enterprise on Openshift, you can also run the following using just the manifests provided in the `enable-namespaces` directory:
+
+```bash
+$ oc apply -f enable-namespaces/
+clusterrole.rbac.authorization.k8s.io/consul-connect-injector-webhook configured
+deployment.apps/consul-connect-injector-webhook-deployment configured
+deployment.apps/consul-controller configured
+customresourcedefinition.apiextensions.k8s.io/serviceintentions.consul.hashicorp.com configured
+```
