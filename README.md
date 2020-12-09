@@ -354,3 +354,12 @@ deployment.apps/consul-connect-injector-webhook-deployment configured
 deployment.apps/consul-controller configured
 customresourcedefinition.apiextensions.k8s.io/serviceintentions.consul.hashicorp.com configured
 ```
+
+If all went well, we should be able to run the following command:
+
+```bash
+$ oc exec -it consul-server-0 -- consul namespace list
+default:
+   Description:
+      Builtin Default Namespace
+```
